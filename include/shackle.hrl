@@ -3,7 +3,7 @@
     client         :: client(),
     pid            :: undefined | pid(),
     request_id     :: request_id(),
-    timeout        :: timeout(),
+    timeout        :: timeout() | infinity,
     timestamp      :: erlang:timestamp()
 }).
 

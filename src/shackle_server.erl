@@ -112,9 +112,14 @@ handle_msg({Request, #cast {
             case Protocol:send(Socket, Data) of
                 ok ->
                     ?METRICS(Client, counter, <<"send">>),
-                    Msg = {timeout, ExtRequestId},
-                    TimerRef = erlang:send_after(Timeout, self(), Msg),
-                    shackle_queue:add(Id, ExtRequestId, Cast, TimerRef),
+                    case Timeout of
+                        infinity ->
+                            shackle_queue:add(Id, ExtRequestId, Cast);
+                        N ->
+                            Msg = {timeout, ExtRequestId},
+                            TimerRef = erlang:send_after(N, self(), Msg),
+                            shackle_queue:add(Id, ExtRequestId, Cast, TimerRef)
+                    end,
                     {ok, {State, ClientState2}};
                 {error, Reason} ->
                     ?WARN(PoolName, "send error: ~p", [Reason]),
@@ -369,7 +374,10 @@ process_responses(Client, ServerId, [{ExtRequestId, Reply} | T]) ->
             ?METRICS(Client, counter, <<"found">>),
             Diff = timer:now_diff(os:timestamp(), Timestamp),
             ?METRICS(Client, timing, <<"reply">>, Diff),
-            erlang:cancel_timer(TimerRef),
+            case TimerRef of
+                undefined -> ok;
+                TRef -> erlang:cancel_timer(TRef)
+            end,
             reply(ServerId, Reply, Cast);
         {error, not_found} ->
             ?METRICS(Client, counter, <<"not_found">>, 1),

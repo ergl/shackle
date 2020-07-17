@@ -6,11 +6,20 @@
 
 %% internal
 -export([
+    add/3,
     add/4,
     clear/1,
     init/0,
     remove/2
 ]).
+
+%% internal
+-spec add(server_id(), external_request_id(), cast()) -> ok.
+
+add(ServerId, ExtRequestId, Cast) ->
+    Object = {{ServerId, ExtRequestId}, {Cast, undefined}},
+    ets:insert(?ETS_TABLE_QUEUE, Object),
+    ok.
 
 %% internal
 -spec add(server_id(), external_request_id(), cast(), reference()) ->
@@ -41,7 +50,7 @@ init() ->
     ok.
 
 -spec remove(server_id(), external_request_id()) ->
-    {ok, cast(), reference()} | {error, not_found}.
+    {ok, cast(), reference() | undefined} | {error, not_found}.
 
 remove(ServerId, ExtRequestId) ->
     case ets_take(?ETS_TABLE_QUEUE, {ServerId, ExtRequestId}) of
