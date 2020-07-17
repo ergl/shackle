@@ -94,6 +94,20 @@ handle_msg({Request, #cast {
     } = State, ClientState}) ->
 
     try Client:handle_request(Request, ClientState) of
+        {ok, Data, NewClientState} ->
+            case Protocol:send(Socket, Data) of
+                ok ->
+                    ?METRICS(Client, counter, <<"send">>),
+                    reply(Id, ok, Cast),
+                    {ok, {State, NewClientState}};
+
+                {error, Reason} ->
+                    ?WARN(PoolName, "send error: ~p", [Reason]),
+                    Protocol:close(Socket),
+                    reply(Id, {error, socket_closed}, Cast),
+                    close(State, NewClientState)
+            end;
+
         {ok, ExtRequestId, Data, ClientState2} ->
             case Protocol:send(Socket, Data) of
                 ok ->

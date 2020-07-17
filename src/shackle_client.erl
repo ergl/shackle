@@ -12,7 +12,8 @@
     {error, Reason :: term(), State :: term()}.
 
 -callback handle_request(Request :: term(), State :: term()) ->
-    {ok, RequestId :: external_request_id(), Data :: iodata(), State :: term()}.
+    {ok, RequestId :: external_request_id(), Data :: iodata(), State :: term()} |
+    {ok, Data :: iodata(), State :: term()}.
 
 -callback handle_data(Data :: binary(), State :: term()) ->
     {ok, [Response :: response()], State :: term()} |
