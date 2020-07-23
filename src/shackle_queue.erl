@@ -31,7 +31,7 @@ add(ServerId, ExtRequestId, Cast, TimerRef) ->
     ok.
 
 -spec clear(server_id()) ->
-    [{cast(), reference()}].
+    [{cast(), reference() | undefined}].
 
 clear(ServerId) ->
     Match = {{ServerId, '_'}, '_'},

@@ -459,6 +459,9 @@ reply_all(ServerId, Reply) ->
 reply_all(_ServerId, _Reply, []) ->
     ok;
 reply_all(ServerId, Reply, [{Cast, TimerRef} | T]) ->
-    erlang:cancel_timer(TimerRef),
+    case TimerRef of
+        undefined -> ok;
+        TRef -> erlang:cancel_timer(TRef)
+    end,
     reply(ServerId, Reply, Cast),
     reply_all(ServerId, Reply, T).
