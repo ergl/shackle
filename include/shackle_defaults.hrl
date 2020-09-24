@@ -2,7 +2,7 @@
 -define(DEFAULT_ADDRESS, "127.0.0.1").
 -define(DEFAULT_BACKLOG_SIZE, 1024).
 -define(DEFAULT_INIT_OPTS, undefined).
--define(DEFAULT_CONNECT_TIMEOUT, 500).
+-define(DEFAULT_CONNECT_TIMEOUT, infinity).
 -define(DEFAULT_MAX_RETRIES, 0).
 -define(DEFAULT_POOL_SIZE, 16).
 -define(DEFAULT_POOL_STRATEGY, random).
