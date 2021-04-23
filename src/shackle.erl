@@ -21,7 +21,7 @@
 call(PoolName, Request) ->
     call(PoolName, Request, ?DEFAULT_TIMEOUT).
 
--spec call(atom(), term(), timeout()) ->
+-spec call(atom(), term(), timeout() | infinity) ->
     term() | {error, atom()}.
 
 call(PoolName, Request, Timeout) ->
@@ -44,7 +44,7 @@ cast(PoolName, Request) ->
 cast(PoolName, Request, Pid) ->
     cast(PoolName, Request, Pid, ?DEFAULT_TIMEOUT).
 
--spec cast(pool_name(), term(), undefined | pid(), timeout()) ->
+-spec cast(pool_name(), term(), undefined | pid(), timeout() | infinity) ->
     {ok, request_id()} | {error, atom()}.
 
 cast(PoolName, Request, Pid, Timeout) ->

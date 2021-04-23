@@ -6,6 +6,7 @@
 
 %% internal
 -export([
+    add/4,
     add/5,
     clear/2,
     delete/1,
@@ -15,6 +16,13 @@
 ]).
 
 %% internal
+-spec add(table(), server_id(), external_request_id(), cast()) ->
+    ok.
+add(Table, ServerId, ExtRequestId, Cast) ->
+    Object = {{ServerId, ExtRequestId}, {Cast, undefined}},
+    ets:insert(Table, Object),
+    ok.
+
 -spec add(table(), server_id(), external_request_id(), cast(), reference()) ->
     ok.
 
@@ -24,7 +32,7 @@ add(Table, ServerId, ExtRequestId, Cast, TimerRef) ->
     ok.
 
 -spec clear(table(), server_id()) ->
-    [{cast(), reference()}].
+    [{cast(), reference() | undefined}].
 
 clear(Table, ServerId) ->
     Match = {{ServerId, '_'}, '_'},

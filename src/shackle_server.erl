@@ -106,10 +106,13 @@ handle_msg({Request, #cast {
                         undefined ->
                             reply(ok, Cast, State);
                         _ ->
-                            Msg = {timeout, ExtRequestId},
-                            TimerRef = erlang:send_after(Timeout, self(), Msg),
-                            shackle_queue:add(Queue, Id, ExtRequestId, Cast,
-                                TimerRef)
+                            case Timeout of
+                                infinity ->
+                                    shackle_queue:add(Queue, Id, ExtRequestId, Cast);
+                                N ->
+                                    TimerRef = erlang:send_after(N, self(), {timeout, ExtRequestId}),
+                                    shackle_queue:add(Queue, Id, ExtRequestId, Cast, TimerRef)
+                            end
                     end,
                     {ok, {State, ClientState2}};
                 {error, Reason} ->
@@ -370,7 +373,12 @@ process_responses([{ExtRequestId, Reply} | T], #state {
             ?METRICS(Client, counter, <<"found">>),
             Diff = timer:now_diff(os:timestamp(), Timestamp),
             ?METRICS(Client, timing, <<"reply">>, Diff),
-            erlang:cancel_timer(TimerRef),
+            if
+                is_reference(TimerRef) ->
+                    erlang:cancel_timer(TimerRef);
+                true ->
+                    ok
+            end,
             reply(Reply, Cast, State);
         {error, not_found} ->
             ?METRICS(Client, counter, <<"not_found">>, 1),
@@ -465,6 +473,11 @@ reply_all(Reply, #state {
 reply_all(_Reply, [], _State) ->
     ok;
 reply_all(Reply, [{Cast, TimerRef} | T], State) ->
-    erlang:cancel_timer(TimerRef),
+    if
+        is_reference(TimerRef) ->
+            erlang:cancel_timer(TimerRef);
+        true ->
+            ok
+    end,
     reply(Reply, Cast, State),
     reply_all(Reply, T, State).
