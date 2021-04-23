@@ -78,7 +78,7 @@ init() ->
 server(Name) ->
     case options(Name) of
         {ok, #pool_options {max_retries = MaxRetries} = Options} ->
-            server(Name, Options, MaxRetries + 1);
+            server(Name, Options, retries_inc(MaxRetries));
         {error, Reson} ->
             {error, Reson}
     end.
@@ -156,11 +156,11 @@ server(Name, #pool_options {
                     {ok, Client, ServerName};
                 false ->
                     ?METRICS(Client, counter, <<"backlog_full">>),
-                    server(Name, Options, N - 1)
+                    server(Name, Options, retries_dec(N))
             end;
         false ->
             ?METRICS(Client, counter, <<"disabled">>),
-            server(Name, Options, N - 1)
+            server(Name, Options, retries_dec(N))
     end.
 
 server_id(Name, PoolSize, random) ->
@@ -214,3 +214,11 @@ stop_children(Name, [Index | T]) ->
     supervisor:terminate_child(?SUPERVISOR, ServerName),
     supervisor:delete_child(?SUPERVISOR, ServerName),
     stop_children(Name, T).
+
+-spec retries_inc(max_retries()) -> max_retries().
+retries_inc(infinity) -> infinity;
+retries_inc(N) -> N + 1.
+
+-spec retries_dec(max_retries()) -> max_retries().
+retries_dec(infinity) -> infinity;
+retries_dec(N) -> N - 1.

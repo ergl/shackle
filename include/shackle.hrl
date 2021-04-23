@@ -41,7 +41,7 @@
 -type inet_address() :: inet:ip_address() | inet:hostname().
 -type inet_port() :: inet:port_number().
 -type init_options() :: term().
--type max_retries() :: non_neg_integer().
+-type max_retries() :: non_neg_integer() | infinity.
 -type metric_type() :: counter | timing.
 -type metric_key() :: iodata().
 -type metric_value() :: integer().
